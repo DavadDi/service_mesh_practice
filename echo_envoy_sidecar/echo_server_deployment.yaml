@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    app: envoy-echo
+  name: envoy-echo
+  namespace: envoy-test
+spec:
+  minReadySeconds: 5
+  replicas: 2
+  selector:
+    matchLabels:
+      app: envoy-echo
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: envoy-echo
+    spec:
+      containers:
+      - name: envoy
+        image: lyft/envoy:latest
+        command: ["/usr/local/bin/envoy"]
+        args:
+        - "--config-path /etc/envoy/envoy_echo.json"
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: envoy-echo-config
+          mountPath: /etc/envoy
+      - image: skyscanner/go-httpbin:travis-9
+        imagePullPolicy: IfNotPresent
+        name: httpbin
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: envoy-echo-config
+        configMap:
+          name: envoy-echo-config

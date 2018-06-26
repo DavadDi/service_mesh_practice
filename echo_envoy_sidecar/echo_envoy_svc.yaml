@@ -1,0 +1,19 @@
+apiVersion: v1   
+kind: Service    
+metadata:        
+  annotations:   
+  labels:        
+    app: envoy-echo
+  name: envoy-echo
+  namespace: envoy-test
+spec:            
+  externalTrafficPolicy: Cluster
+  ports:         
+  - name: envoy-echo
+    port: 80     
+    protocol: TCP
+    targetPort: 80
+  selector:      
+    app: envoy-echo
+  sessionAffinity: None
+  type: NodePort 
